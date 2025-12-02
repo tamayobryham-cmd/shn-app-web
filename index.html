@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHN Connect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f8f9fa; }
+        .hero-section {
+            background: url('banner.jpg') no-repeat center center/cover;
+            height: 300px; position: relative; border-radius: 0 0 20px 20px;
+        }
+        .hero-overlay {
+            background: rgba(0, 0, 0, 0.4); position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            display: flex; align-items: center; justify-content: center; border-radius: 0 0 20px 20px;
+        }
+        .hero-text { color: white; text-align: center; }
+        .card-custom { border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .card-custom:hover { transform: translateY(-5px); }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
+        .bg-realizado { background-color: #e2e3e5; color: #383d41; }
+        .bg-llegado { background-color: #fff3cd; color: #856404; }
+        .bg-entregado { background-color: #d4edda; color: #155724; }
+        .nav-link { cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#" onclick="location.reload()">SHN Connect</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto" id="nav-links"></ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="section-home">
+        <div class="hero-section">
+            <div class="hero-overlay">
+                <div class="hero-text">
+                    <h1>Tu puente a lo mejor de Shein</h1>
+                    <p>Compra f�cil, recibe feliz.</p>
+                </div>
+            </div>
+        </div>
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <div class="card p-4 shadow-sm border-0">
+                        <h3 class="text-center mb-4">Iniciar Sesi�n</h3>
+                        <div class="mb-3">
+                            <label>Nombre o Tel�fono</label>
+                            <input type="text" id="loginInput" class="form-control" placeholder="Nombre o N�mero">
+                        </div>
+                        <div class="mb-3">
+                            <label>Contrase�a</label>
+                            <input type="password" id="loginPass" class="form-control" placeholder="Contrase�a">
+                        </div>
+                        <button onclick="login()" class="btn btn-dark w-100">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="section-pedidos" class="container mt-4 d-none">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Estado de Encargos</h2>
+            <button id="btn-add-pedido" class="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#modalPedido">+ Nuevo Encargo</button>
+        </div>
+        <div class="row" id="pedidos-container">
+            <div class="text-center w-100">Cargando datos en tiempo real...</div>
+        </div>
+    </div>
+
+        <div id="section-tienda" class="container mt-4 d-none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Tienda Virtual</h2>
+        <button id="btn-add-producto" class="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#modalProducto">+ Agregar Producto</button>
+    </div>
+    <div class="row" id="productos-container"></div>
+</div>
+    <div id="section-usuarios" class="container mt-4 d-none">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Gestión de Usuarios</h2>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUsuario">+ Nuevo Usuario</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover bg-white shadow-sm rounded">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Rol</th>
+                    <th>Contraseña</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="usuarios-container">
+                </tbody>
+        </table>
+    </div>
+</div>
+    <div class="modal fade" id="modalPedido" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Agregar Nuevo Encargo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <select id="new-nombre" class="form-select mb-2">
+                         <option value="" disabled selected>Selecciona un Cliente</option>
+                    </select>
+                    <input type="number" id="new-pagado" class="form-control mb-2" placeholder="D�lar Pagado">
+                    <input type="number" id="new-deuda" class="form-control mb-2" placeholder="D�lar Deuda">
+                    <label>Fecha Llegada (Inicio - Fin)</label>
+                    <div class="d-flex gap-2 mb-2">
+                        <input type="date" id="new-fecha1" class="form-control">
+                        <input type="date" id="new-fecha2" class="form-control">
+                    </div>
+                    <select id="new-estado" class="form-select mb-2">
+                        <option value="Realizado">Realizado</option>
+                        <option value="Llegado">Llegado</option>
+                        <option value="Entregado">Entregado</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" onclick="guardarPedido()">Guardar en Base de Datos</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modalEditarPedido" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Encargo Existente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-pedido-id"> 
+                
+                <input type="text" id="edit-nombre-pedido" class="form-control mb-2" placeholder="Nombre del Cliente">
+                <input type="number" id="edit-pagado" class="form-control mb-2" placeholder="Dólar Pagado">
+                <input type="number" id="edit-deuda" class="form-control mb-2" placeholder="Dólar Deuda">
+                <label>Fecha Llegada (Inicio - Fin)</label>
+                <div class="d-flex gap-2 mb-2">
+                    <input type="date" id="edit-fecha1" class="form-control">
+                    <input type="date" id="edit-fecha2" class="form-control">
+                </div>
+                <select id="edit-estado" class="form-select mb-2">
+                    <option value="Realizado">Realizado</option>
+                    <option value="Llegado">Llegado</option>
+                    <option value="Entregado">Entregado</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger me-auto" onclick="eliminarPedido()">Eliminar Encargo</button>
+                <button type="button" class="btn btn-primary" onclick="guardarEdicionPedido()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalProducto" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Agregar Nuevo Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="prod-nombre" class="form-control mb-2" placeholder="Nombre del Producto">
+                <input type="text" id="prod-detalle" class="form-control mb-2" placeholder="Detalles del Producto (Ej: Talla M, Color)">
+                <input type="number" id="prod-precio" class="form-control mb-2" placeholder="Precio ($)">
+                <input type="text" id="prod-imagen" class="form-control mb-2" placeholder="URL de la Imagen">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="guardarProducto()">Guardar Producto</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalEditarProducto" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Producto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-prod-id">
+                <input type="text" id="edit-prod-nombre" class="form-control mb-2" placeholder="Nombre">
+                <input type="text" id="edit-prod-detalle" class="form-control mb-2" placeholder="Detalles">
+                <input type="number" id="edit-prod-precio" class="form-control mb-2" placeholder="Precio">
+                <input type="text" id="edit-prod-imagen" class="form-control mb-2" placeholder="URL Imagen">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger me-auto" onclick="eliminarProducto()">Eliminar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarEdicionProducto()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <div class="modal fade" id="modalUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Registrar Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="user-nombre" class="form-control mb-2" placeholder="Nombre de Usuario">
+                <input type="text" id="user-phone" class="form-control mb-2" placeholder="Teléfono">
+                <input type="text" id="user-pass" class="form-control mb-2" placeholder="Contraseña">
+                <select id="user-role" class="form-select">
+                    <option value="user">Usuario Cliente</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="guardarUsuario()">Crear Usuario</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Usuario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-user-id">
+                <input type="text" id="edit-user-nombre" class="form-control mb-2" placeholder="Nombre">
+                <input type="text" id="edit-user-phone" class="form-control mb-2" placeholder="Teléfono">
+                <input type="text" id="edit-user-pass" class="form-control mb-2" placeholder="Contraseña">
+                <select id="edit-user-role" class="form-select">
+                    <option value="user">Usuario Cliente</option>
+                    <option value="admin">Administrador</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger me-auto" onclick="eliminarUsuario()">Eliminar Usuario</button>
+                <button type="button" class="btn btn-primary" onclick="guardarEdicionUsuario()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script type="module">
+    // 1. IMPORTAR LIBRER�AS DE FIREBASE
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, Timestamp, doc, updateDoc, deleteDoc, getDoc, where, getDocs } 
+    from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // -------------------------------------------------------------
+    // 2. PEGA AQU� TU CONFIGURACI�N DE FIREBASE (PASO IMPORTANTE)
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCSDb_tGZLc0Rw24rfpFh_C8ImPwF8HfxQ",
+  authDomain: "shn-connect.firebaseapp.com",
+  projectId: "shn-connect",
+  storageBucket: "shn-connect.firebasestorage.app",
+  messagingSenderId: "1056200452588",
+  appId: "1:1056200452588:web:b29e399c4f84296c45f8c9"
+};       
+    // -------------------------------------------------------------
+
+    // Iniciar Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Variables Globales
+    let currentUser = null;
+    window.adminPhone = "54978188"; 
+
+    // --- NUEVA FUNCIÓN DE LOGIN REAL (CONECTADA A FIRESTORE) ---
+    window.login = async function() {
+        const input = document.getElementById('loginInput').value.trim(); // .trim() quita espacios accidentales
+        const pass = document.getElementById('loginPass').value.trim();
+        const btnLogin = document.querySelector('#section-home button'); // Referencia al botón para feedback visual
+
+        if (!input || !pass) {
+            return alert("Por favor ingresa usuario y contraseña.");
+        }
+
+        // Feedback de carga
+        const textoOriginal = btnLogin.innerText;
+        btnLogin.innerText = "Verificando...";
+        btnLogin.disabled = true;
+
+        try {
+            const usuariosRef = collection(db, "usuarios");
+            
+            // 1. Intentar buscar por NOMBRE exacto
+            let q = query(usuariosRef, where("nombre", "==", input));
+            let snapshot = await getDocs(q);
+
+            // 2. Si no encuentra por nombre, intentar buscar por TELÉFONO
+            if (snapshot.empty) {
+                q = query(usuariosRef, where("telefono", "==", input));
+                snapshot = await getDocs(q);
+            }
+
+            // 3. Verificar resultados
+            if (snapshot.empty) {
+                alert("Usuario no encontrado. Verifica el nombre o el número.");
+                resetBoton();
+                return;
+            }
+
+            // 4. Validar Contraseña
+            // Tomamos el primer documento encontrado (asumimos nombres/teléfonos únicos)
+            const userDoc = snapshot.docs[0];
+            const userData = userDoc.data();
+
+            if (userData.password === pass) {
+                // ¡LOGIN EXITOSO!
+                console.log("Acceso concedido a:", userData.nombre);
+                
+                // Guardamos los datos del usuario en la variable global
+                currentUser = { 
+                    name: userData.nombre, 
+                    role: userData.rol, // 'admin' o 'user' (tal cual está en la BD)
+                    phone: userData.telefono,
+                    id: userDoc.id 
+                };
+                
+                window.saveSession(); // ⭐️ ¡NUEVO! Guardar la sesión persistente
+
+                // Iniciar la aplicación
+                window.initApp();
+                
+            } else {
+                alert("Contraseña incorrecta.");
+                resetBoton();
+            }
+
+        } catch (error) {
+            console.error("Error al intentar iniciar sesión:", error);
+            alert("Hubo un error de conexión. Intenta nuevamente.");
+            resetBoton();
+        }
+
+        function resetBoton() {
+            btnLogin.innerText = textoOriginal;
+            btnLogin.disabled = false;
+        }
+    };
+    // --- FUNCIONES DE PERSISTENCIA DE SESIÓN ---
+
+// Guarda la sesión en localStorage
+window.saveSession = function() {
+    // Convertimos el objeto a una cadena JSON para guardarlo
+    localStorage.setItem('shn_currentUser', JSON.stringify(currentUser));
+}
+
+// Verifica la sesión al cargar la página
+window.checkSession = function() {
+    const savedUser = localStorage.getItem('shn_currentUser');
+    if (savedUser) {
+        // Convertimos la cadena JSON de vuelta a objeto y restauramos la variable global
+        currentUser = JSON.parse(savedUser);
+        console.log("Sesión restaurada para:", currentUser.name);
+        // Iniciamos la aplicación directamente sin pasar por el login
+        window.initApp();
+        return true; 
+    }
+    // Si no hay sesión, aseguramos que se vea la pantalla de login
+    document.getElementById('section-home').classList.remove('d-none');
+    return false; 
+}
+
+// Maneja el cierre de sesión y limpia localStorage
+window.logout = function() {
+    localStorage.removeItem('shn_currentUser');
+    location.reload();
+}
+
+    window.initApp = function() {
+        document.getElementById('section-home').classList.add('d-none');
+        document.getElementById('section-pedidos').classList.remove('d-none');
+        document.getElementById('section-tienda').classList.remove('d-none');
+        document.getElementById('section-usuarios').classList.add('d-none'); // Oculto por defecto
+
+        // Construir Menú Base
+        let navHtml = `
+            <li class="nav-item"><a class="nav-link fw-bold text-primary" onclick="window.showSection('pedidos')">🎁 Mis Encargos</a></li>
+            <li class="nav-item"><a class="nav-link fw-bold text-primary" onclick="window.showSection('tienda')">🏪 Tienda</a></li>
+        `;
+
+        // Si es admin, agregar opciones extra
+        if (currentUser.role === 'admin') {
+            document.getElementById('btn-add-pedido').classList.remove('d-none');
+            document.getElementById('btn-add-producto').classList.remove('d-none');
+            
+            // Agregar link al menú
+            navHtml += `<li class="nav-item"><a class="nav-link fw-bold text-primary" onclick="window.showSection('usuarios')">👥 Usuarios</a></li>`;
+            
+            window.llenarSelectClientes();
+            // Iniciar escucha de usuarios
+            window.escucharUsuarios();
+        }
+
+        navHtml += `<li class="nav-item"><a class="nav-link text-danger" onclick="window.logout()">❌ Salir</a></li>`;
+        
+        document.getElementById('nav-links').innerHTML = navHtml;
+        
+        // CARGAR DATOS
+        window.escucharPedidos();
+        window.escucharProductos(); 
+    };
+
+    // Actualizar también la función showSection para incluir usuarios
+    window.showSection = function(section) {
+        document.getElementById('section-pedidos').classList.add('d-none');
+        document.getElementById('section-tienda').classList.add('d-none');
+        document.getElementById('section-usuarios').classList.add('d-none'); // Ocultar usuarios
+        
+        // Mostrar la solicitada
+        document.getElementById('section-' + section).classList.remove('d-none');
+    }
+
+    // --- L�GICA DE BASE DE DATOS (FIRESTORE) ---
+
+    // Funci�n para LEER pedidos en tiempo real
+    window.escucharPedidos = function() {
+    const q = query(collection(db, "pedidos"), orderBy("fechaCreacion", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('pedidos-container');
+        container.innerHTML = ''; 
+
+        const pedidosFiltrados = currentUser.role === 'admin'
+            ? snapshot.docs
+            : snapshot.docs.filter(doc => doc.data().nombreUsuario.toLowerCase() === currentUser.name.toLowerCase());
+
+        pedidosFiltrados.forEach((docSnap) => { // Usamos docSnap para diferenciar del doc de html
+            const p = docSnap.data();
+            const id = docSnap.id; // Necesitamos el ID del documento
+            
+            let badgeClass = 'bg-realizado';
+            if(p.estado === 'Llegado') badgeClass = 'bg-llegado';
+            if(p.estado === 'Entregado') badgeClass = 'bg-entregado';
+
+            // Botón de edición solo para admin
+            let btnEditar = '';
+            if(currentUser.role === 'admin') {
+                btnEditar = `<button class="btn btn-sm btn-outline-secondary w-100 mt-2" onclick="cargarDatosEdicionPedido('${id}')">✏️ Editar / Eliminar</button>`;
+            }
+
+            const html = `
+            <div class="col-md-6 mb-3">
+                <div class="card card-custom bg-white p-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <h5 class="fw-bold">${p.nombreUsuario}</h5>
+                        <span class="status-badge ${badgeClass}">${p.estado}</span>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-6">Pagado: <strong>$${p.dolarPagado}</strong></div>
+                        <div class="col-6 text-end">Deuda: <strong class="${p.dolarDeuda > 0 ? 'text-danger' : 'text-success'}">$${p.dolarDeuda}</strong></div>
+                    </div>
+                    <div class="mt-2 text-muted small">
+                        Llegada: ${p.llegadaInicio} a ${p.llegadaFin}
+                    </div>
+                    ${btnEditar}
+                </div>
+            </div>`;
+            
+            container.innerHTML += html;
+        });
+        
+        if (pedidosFiltrados.length === 0) container.innerHTML = '<p class="text-center w-100 text-muted">No hay encargos.</p>';
+    });
+}
+
+    // Funci�n para GUARDAR un nuevo pedido (Solo Admin)
+    window.guardarPedido = async function() { // �CORREGIDO!
+        const nombre = document.getElementById('new-nombre').value;
+        const pagado = document.getElementById('new-pagado').value;
+        const deuda = document.getElementById('new-deuda').value;
+        const fecha1 = document.getElementById('new-fecha1').value;
+        const fecha2 = document.getElementById('new-fecha2').value;
+        const estado = document.getElementById('new-estado').value;
+
+        if(!nombre || !pagado) return alert("Llena los datos m�nimos");
+
+        try {
+            await addDoc(collection(db, "pedidos"), {
+                nombreUsuario: nombre,
+                dolarPagado: parseFloat(pagado),
+                dolarDeuda: parseFloat(deuda || 0), // Asegurar que sea 0 si est� vac�o
+                llegadaInicio: fecha1 || 'Pendiente', // Manejar campos vac�os
+                llegadaFin: fecha2 || 'Pendiente', // Manejar campos vac�os
+                estado: estado,
+                fechaCreacion: Timestamp.now()
+            });
+            
+            // Cerrar modal y limpiar
+           const modalElement = document.getElementById('modalPedido');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.hide();
+            // Limpiar inputs
+            document.getElementById('new-nombre').value = '';
+            document.getElementById('new-pagado').value = '';
+            document.getElementById('new-deuda').value = '';
+            document.getElementById('new-fecha1').value = '';
+            document.getElementById('new-fecha2').value = '';
+            
+            alert("Pedido guardado exitosamente");
+        } catch (e) {
+            console.error("Error: ", e);
+            alert("Hubo un error al guardar");
+        }
+    }
+    // --- FUNCIÓN DE NOTIFICACIÓN DE LLEGADA ---
+
+window.enviarNotificacionLlegada = async function(nombreCliente, pedidoId) {
+    try {
+        // 1. Buscar el usuario (cliente) por nombre
+        const usuariosRef = collection(db, "usuarios");
+        const q = query(usuariosRef, where("nombre", "==", nombreCliente));
+        const snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            console.warn(`No se encontró el teléfono del usuario: ${nombreCliente}. No se pudo enviar WhatsApp.`);
+            return;
+        }
+
+        // 2. Obtener el número de teléfono
+        const userDoc = snapshot.docs[0];
+        const telefonoCliente = userDoc.data().telefono;
+
+        if (!telefonoCliente) {
+             console.warn(`El usuario ${nombreCliente} no tiene número de teléfono registrado. No se pudo enviar WhatsApp.`);
+            return;
+        }
+        
+        // 3. Crear el mensaje de notificación
+        const mensaje = `🎉 ¡Hola ${nombreCliente}! ¡Tu encargo con ID: ${pedidoId} ha *LLEGADO*! Por favor, coordina la entrega.`;
+        
+        // 4. Abrir la ventana de WhatsApp
+        // Usamos la función window.open, similar a 'comprar'
+        window.open(`https://wa.me/${telefonoCliente}?text=${encodeURIComponent(mensaje)}`, '_blank');
+
+    } catch (error) {
+        console.error("Error al notificar por WhatsApp:", error);
+    }
+}
+
+    // Funci�n para LEER productos en tiempo real
+    window.escucharProductos = function() {
+    const q = query(collection(db, "productos"), orderBy("nombre", "asc"));
+    
+    onSnapshot(q, (snapshot) => {
+        const container = document.getElementById('productos-container');
+        container.innerHTML = ''; 
+
+        snapshot.forEach((docSnap) => {
+            const p = docSnap.data();
+            const id = docSnap.id;
+
+            // Lógica de botones: Admin ve Editar, Usuario ve Comprar
+            let actionBtn = `<button onclick="window.comprar('${p.nombre}')" class="btn btn-dark w-100 mt-2">Comprar</button>`;
+            
+            if(currentUser.role === 'admin') {
+                actionBtn = `<button onclick="cargarDatosEdicionProducto('${id}')" class="btn btn-warning w-100 mt-2">✏️ Editar Producto</button>`;
+            }
+
+            const html = `
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="card card-custom h-100">
+                    <img src="${p.imageUrl || 'https://via.placeholder.com/300?text=SHN'}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="${p.nombre}">
+                    <div class="card-body">
+                        <h5>${p.nombre}</h5>
+                        <p class="text-muted">${p.detalles}</p>
+                        <h4 class="fw-bold">$${p.precio.toFixed(2)}</h4>
+                        ${actionBtn}
+                    </div>
+                </div>
+            </div>`;
+            
+            container.innerHTML += html;
+        });
+
+        if (snapshot.empty) container.innerHTML = '<p class="text-center w-100 text-muted">Aún no hay productos.</p>';
+    });
+}
+
+    // Funci�n para GUARDAR un nuevo producto (Solo Admin)
+    window.guardarProducto = async function() { // �CORREGIDO!
+        const nombre = document.getElementById('prod-nombre').value;
+        const detalle = document.getElementById('prod-detalle').value;
+        const precio = document.getElementById('prod-precio').value;
+        const imagenUrl = document.getElementById('prod-imagen').value;
+
+        if(!nombre || !precio) return alert("El nombre y el precio son obligatorios.");
+
+        try {
+            await addDoc(collection(db, "productos"), {
+                nombre: nombre,
+                detalles: detalle,
+                precio: parseFloat(precio),
+                imageUrl: imagenUrl,
+                fechaCreacion: Timestamp.now()
+            });
+            
+            // Cerrar modal y alertar
+          const modalElement = document.getElementById('modalProducto');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modal.hide();
+            // Limpiar inputs
+            document.getElementById('prod-nombre').value = '';
+            document.getElementById('prod-detalle').value = '';
+            document.getElementById('prod-precio').value = '';
+            document.getElementById('prod-imagen').value = '';
+
+            alert("Producto guardado exitosamente y visible en la tienda.");
+        } catch (e) {
+            console.error("Error al guardar producto: ", e);
+            alert("Hubo un error al guardar el producto.");
+        }
+    }
+    // -------------------------------------------------------------
+    // --- FUNCIONES DE EDICIÓN Y ELIMINACIÓN DE PEDIDOS ---
+    // -------------------------------------------------------------
+
+    // 1. Cargar datos en el modal
+    window.cargarDatosEdicionPedido = async function(id) {
+        const docRef = doc(db, "pedidos", id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            // Llenar inputs del modal
+            document.getElementById('edit-pedido-id').value = id;
+            document.getElementById('edit-nombre-pedido').value = data.nombreUsuario;
+            document.getElementById('edit-pagado').value = data.dolarPagado;
+            document.getElementById('edit-deuda').value = data.dolarDeuda;
+            document.getElementById('edit-fecha1').value = data.llegadaInicio;
+            document.getElementById('edit-fecha2').value = data.llegadaFin;
+            document.getElementById('edit-estado').value = data.estado;
+
+            // Abrir modal
+            const modal = new bootstrap.Modal(document.getElementById('modalEditarPedido'));
+            modal.show();
+        }
+    }
+
+    // 2. Guardar cambios (Update)
+    window.guardarEdicionPedido = async function() {
+        const id = document.getElementById('edit-pedido-id').value;
+        const nombre = document.getElementById('edit-nombre-pedido').value;
+        const pagado = document.getElementById('edit-pagado').value;
+        const deuda = document.getElementById('edit-deuda').value;
+        const fecha1 = document.getElementById('edit-fecha1').value;
+        const fecha2 = document.getElementById('edit-fecha2').value;
+        const estado = document.getElementById('edit-estado').value;
+
+        try {
+            const docRef = doc(db, "pedidos", id);
+            await updateDoc(docRef, {
+                nombreUsuario: nombre,
+                dolarPagado: parseFloat(pagado),
+                dolarDeuda: parseFloat(deuda),
+                llegadaInicio: fecha1,
+                llegadaFin: fecha2,
+                estado: estado
+            });
+
+            // Cerrar modal
+            const modalEl = document.getElementById('modalEditarPedido');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            alert("Pedido actualizado correctamente");
+            
+            // ⭐️ ¡NUEVO! Comprobación y Notificación
+            if (estado === 'Llegado') {
+                // Llamamos a la función de notificación
+                window.enviarNotificacionLlegada(nombre, id);
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Error al actualizar");
+        }
+    }
+
+    // 3. Eliminar Pedido (Delete)
+    window.eliminarPedido = async function() {
+        if(!confirm("¿Estás seguro de eliminar este encargo? No se puede deshacer.")) return;
+        
+        const id = document.getElementById('edit-pedido-id').value;
+        try {
+            await deleteDoc(doc(db, "pedidos", id));
+            
+            const modalEl = document.getElementById('modalEditarPedido');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            alert("Pedido eliminado");
+        } catch(e) {
+            console.error(e);
+            alert("Error al eliminar");
+        }
+    }
+
+    // -------------------------------------------------------------
+    // --- FUNCIONES DE EDICIÓN Y ELIMINACIÓN DE PRODUCTOS ---
+    // -------------------------------------------------------------
+
+    // 1. Cargar datos
+    window.cargarDatosEdicionProducto = async function(id) {
+        const docRef = doc(db, "productos", id);
+        const docSnap = await getDoc(docRef);
+
+        if(docSnap.exists()){
+            const data = docSnap.data();
+            document.getElementById('edit-prod-id').value = id;
+            document.getElementById('edit-prod-nombre').value = data.nombre;
+            document.getElementById('edit-prod-detalle').value = data.detalles;
+            document.getElementById('edit-prod-precio').value = data.precio;
+            document.getElementById('edit-prod-imagen').value = data.imageUrl;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalEditarProducto'));
+            modal.show();
+        }
+    }
+
+    // 2. Guardar cambios
+    window.guardarEdicionProducto = async function() {
+        const id = document.getElementById('edit-prod-id').value;
+        const nombre = document.getElementById('edit-prod-nombre').value;
+        const detalle = document.getElementById('edit-prod-detalle').value;
+        const precio = document.getElementById('edit-prod-precio').value;
+        const img = document.getElementById('edit-prod-imagen').value;
+
+        try {
+            const docRef = doc(db, "productos", id);
+            await updateDoc(docRef, {
+                nombre: nombre,
+                detalles: detalle,
+                precio: parseFloat(precio),
+                imageUrl: img
+            });
+
+            const modalEl = document.getElementById('modalEditarProducto');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            alert("Producto actualizado");
+        } catch (e) {
+            console.error(e);
+            alert("Error al actualizar producto");
+        }
+    }
+
+    // 3. Eliminar Producto
+    window.eliminarProducto = async function() {
+        if(!confirm("¿Eliminar producto de la tienda?")) return;
+
+        const id = document.getElementById('edit-prod-id').value;
+        try {
+            await deleteDoc(doc(db, "productos", id));
+            
+            const modalEl = document.getElementById('modalEditarProducto');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            alert("Producto eliminado");
+        } catch (e) {
+            console.error(e);
+            alert("Error al eliminar producto");
+        }
+    }
+    // -------------------------------------------------------------
+    // --- GESTIÓN DE USUARIOS (CRUD) ---
+    // -------------------------------------------------------------
+
+    // 1. LEER Usuarios (Solo Admin)
+    window.escucharUsuarios = function() {
+        if(currentUser.role !== 'admin') return;
+
+        const q = query(collection(db, "usuarios"), orderBy("nombre", "asc"));
+        
+        onSnapshot(q, (snapshot) => {
+            const container = document.getElementById('usuarios-container');
+            container.innerHTML = '';
+
+            snapshot.forEach((docSnap) => {
+                const u = docSnap.data();
+                const id = docSnap.id;
+                
+                // Mostrar contraseña solo como referencia (en producción real esto no se hace así por seguridad)
+                const row = `
+                <tr>
+                    <td>${u.nombre}</td>
+                    <td>${u.telefono || '-'}</td>
+                    <td><span class="badge ${u.rol === 'admin' ? 'bg-danger' : 'bg-secondary'}">${u.rol}</span></td>
+                    <td class="text-muted small">${u.password}</td> 
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="cargarDatosEdicionUsuario('${id}')">Editar</button>
+                    </td>
+                </tr>`;
+                
+                container.innerHTML += row;
+            });
+        });
+    }
+
+    // 2. CREAR Usuario
+    window.guardarUsuario = async function() {
+        const nombre = document.getElementById('user-nombre').value;
+        const phone = document.getElementById('user-phone').value;
+        const pass = document.getElementById('user-pass').value;
+        const role = document.getElementById('user-role').value;
+
+        if(!nombre || !pass) return alert("Nombre y Contraseña son obligatorios");
+
+        try {
+            await addDoc(collection(db, "usuarios"), {
+                nombre: nombre,
+                telefono: phone,
+                password: pass,
+                rol: role,
+                fechaCreacion: Timestamp.now()
+            });
+
+            // Cerrar modal y limpiar
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalUsuario'));
+            modal.hide();
+            document.getElementById('user-nombre').value = '';
+            document.getElementById('user-pass').value = '';
+            document.getElementById('user-phone').value = '';
+            alert("Usuario creado exitosamente");
+        } catch (e) {
+            console.error(e);
+            alert("Error al crear usuario");
+        }
+    }
+
+    // 3. CARGAR Datos para Editar
+    window.cargarDatosEdicionUsuario = async function(id) {
+        const docRef = doc(db, "usuarios", id);
+        const docSnap = await getDoc(docRef);
+
+        if(docSnap.exists()){
+            const data = docSnap.data();
+            document.getElementById('edit-user-id').value = id;
+            document.getElementById('edit-user-nombre').value = data.nombre;
+            document.getElementById('edit-user-phone').value = data.telefono || '';
+            document.getElementById('edit-user-pass').value = data.password;
+            document.getElementById('edit-user-role').value = data.rol;
+
+            const modal = new bootstrap.Modal(document.getElementById('modalEditarUsuario'));
+            modal.show();
+        }
+    }
+
+    // 4. GUARDAR Edición
+    window.guardarEdicionUsuario = async function() {
+        const id = document.getElementById('edit-user-id').value;
+        const nombre = document.getElementById('edit-user-nombre').value;
+        const phone = document.getElementById('edit-user-phone').value;
+        const pass = document.getElementById('edit-user-pass').value;
+        const role = document.getElementById('edit-user-role').value;
+
+        try {
+            await updateDoc(doc(db, "usuarios", id), {
+                nombre: nombre,
+                telefono: phone,
+                password: pass,
+                rol: role
+            });
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario'));
+            modal.hide();
+            alert("Usuario actualizado");
+        } catch(e) {
+            console.error(e);
+            alert("Error al actualizar");
+        }
+    }
+
+    // 5. ELIMINAR Usuario
+    window.eliminarUsuario = async function() {
+        if(!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+        
+        const id = document.getElementById('edit-user-id').value;
+        try {
+            await deleteDoc(doc(db, "usuarios", id));
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarUsuario'));
+            modal.hide();
+            alert("Usuario eliminado");
+        } catch(e) {
+            console.error(e);
+            alert("Error al eliminar");
+        }
+    }
+    // ... (Despues de window.escucharUsuarios)
+
+    // Función para llenar el SELECT del modal de pedidos con nombres de usuarios
+    window.llenarSelectClientes = function() {
+        const select = document.getElementById('new-nombre');
+        // Limpiamos opciones previas, dejando el placeholder
+        select.innerHTML = '<option value="" disabled selected>Selecciona un Cliente</option>';
+
+        // Escuchamos la colección de usuarios
+        const q = query(collection(db, "usuarios"), orderBy("nombre", "asc"));
+        
+        onSnapshot(q, (snapshot) => {
+            snapshot.forEach((docSnap) => {
+                const nombre = docSnap.data().nombre;
+                // Usamos el nombre como valor y como texto visible
+                const option = document.createElement('option');
+                option.value = nombre;
+                option.textContent = nombre;
+                select.appendChild(option);
+            });
+        });
+    }
+
+// ...
+
+    // TIENDA (Datos locales de ejemplo, pero conectados a WhatsApp)
+    window.comprar = function(prod) {
+        const msg = `Hola, soy ${currentUser.name}. Quiero comprar: ${prod}`;
+        window.open(`https://wa.me/${window.adminPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+    // ⭐️ ¡NUEVO! Llamamos a esta función al cargar la página para restaurar la sesión.
+    window.checkSession();
+    
+</script>
+</body>
+</html>
