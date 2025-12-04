@@ -46,7 +46,7 @@
             <div class="hero-overlay">
                 <div class="hero-text">
                     <h1>Tu puente a lo mejor de Shein</h1>
-                    <p>Compra f�cil, recibe feliz.</p>
+                    <p>Compra fcil, recibe feliz.</p>
                 </div>
             </div>
         </div>
@@ -54,14 +54,14 @@
             <div class="row justify-content-center">
                 <div class="col-md-5">
                     <div class="card p-4 shadow-sm border-0">
-                        <h3 class="text-center mb-4">Iniciar Sesi�n</h3>
+                        <h3 class="text-center mb-4">Iniciar Sesin</h3>
                         <div class="mb-3">
-                            <label>Nombre o Tel�fono</label>
-                            <input type="text" id="loginInput" class="form-control" placeholder="Nombre o N�mero">
+                            <label>Nombre o Telfono</label>
+                            <input type="text" id="loginInput" class="form-control" placeholder="Nombre o Nmero">
                         </div>
                         <div class="mb-3">
-                            <label>Contrase�a</label>
-                            <input type="password" id="loginPass" class="form-control" placeholder="Contrase�a">
+                            <label>Contrasea</label>
+                            <input type="password" id="loginPass" class="form-control" placeholder="Contrasea">
                         </div>
                         <button onclick="login()" class="btn btn-dark w-100">Entrar</button>
                     </div>
@@ -80,7 +80,7 @@
         </div>
     </div>
 
-        <div id="section-tienda" class="container mt-4 d-none">
+        <div id="section-tienda" class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Tienda Virtual</h2>
         <button id="btn-add-producto" class="btn btn-primary d-none" data-bs-toggle="modal" data-bs-target="#modalProducto">+ Agregar Producto</button>
@@ -119,8 +119,8 @@
                     <select id="new-nombre" class="form-select mb-2">
                          <option value="" disabled selected>Selecciona un Cliente</option>
                     </select>
-                    <input type="number" id="new-pagado" class="form-control mb-2" placeholder="D�lar Pagado">
-                    <input type="number" id="new-deuda" class="form-control mb-2" placeholder="D�lar Deuda">
+                    <input type="number" id="new-pagado" class="form-control mb-2" placeholder="Dlar Pagado">
+                    <input type="number" id="new-deuda" class="form-control mb-2" placeholder="Dlar Deuda">
                     <label>Fecha Llegada (Inicio - Fin)</label>
                     <div class="d-flex gap-2 mb-2">
                         <input type="date" id="new-fecha1" class="form-control">
@@ -260,13 +260,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script type="module">
-    // 1. IMPORTAR LIBRER�AS DE FIREBASE
+    // 1. IMPORTAR LIBRERAS DE FIREBASE
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, Timestamp, doc, updateDoc, deleteDoc, getDoc, where, getDocs } 
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     // -------------------------------------------------------------
-    // 2. PEGA AQU� TU CONFIGURACI�N DE FIREBASE (PASO IMPORTANTE)
+    // 2. PEGA AQU TU CONFIGURACIN DE FIREBASE (PASO IMPORTANTE)
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCSDb_tGZLc0Rw24rfpFh_C8ImPwF8HfxQ",
@@ -367,6 +367,12 @@ window.saveSession = function() {
     localStorage.setItem('shn_currentUser', JSON.stringify(currentUser));
 }
 
+// Maneja el cierre de sesión y limpia localStorage
+window.logout = function() {
+    localStorage.removeItem('shn_currentUser');
+    location.reload();
+}
+
 // Verifica la sesión al cargar la página
 window.checkSession = function() {
     const savedUser = localStorage.getItem('shn_currentUser');
@@ -378,24 +384,34 @@ window.checkSession = function() {
         window.initApp();
         return true; 
     }
-    // Si no hay sesión, aseguramos que se vea la pantalla de login
+    
+    // ⭐️ LÓGICA DE INVITADO:
+    
+    // 1. Aseguramos que se vea la pantalla de login/home (que no tiene d-none en HTML)
     document.getElementById('section-home').classList.remove('d-none');
+    // 2. La sección-tienda ya es visible porque le quitamos el d-none en HTML.
+    
+    // 3. Configurar menú para invitado:
+    let navHtml = `
+        <li class="nav-item"><a class="nav-link fw-bold text-primary" onclick="window.showSection('home')">🔑 Iniciar Sesión</a></li>
+        <li class="nav-item"><a class="nav-link fw-bold text-primary" onclick="window.showSection('tienda')">🏪 Tienda</a></li>
+    `;
+    document.getElementById('nav-links').innerHTML = navHtml;
+    
+    // 4. Cargar los productos para la tienda de inmediato.
+    window.escucharProductos();
+
     return false; 
 }
 
-// Maneja el cierre de sesión y limpia localStorage
-window.logout = function() {
-    localStorage.removeItem('shn_currentUser');
-    location.reload();
-}
 
     window.initApp = function() {
-        document.getElementById('section-home').classList.add('d-none');
-        document.getElementById('section-pedidos').classList.remove('d-none');
-        document.getElementById('section-tienda').classList.remove('d-none');
+        document.getElementById('section-home').classList.add('d-none'); // Oculta login
+        document.getElementById('section-pedidos').classList.remove('d-none'); // Muestra pedidos
+        document.getElementById('section-tienda').classList.remove('d-none'); // Muestra/Mantiene Tienda
         document.getElementById('section-usuarios').classList.add('d-none'); // Oculto por defecto
 
-        // Construir Menú Base
+        // Construir Menú Base (incluye Pedidos y Tienda)
         let navHtml = `
             <li class="nav-item"><a class="nav-link fw-bold text-primary" onclick="window.showSection('pedidos')">🎁 Mis Encargos</a></li>
             <li class="nav-item"><a class="nav-link fw-bold text-primary" onclick="window.showSection('tienda')">🏪 Tienda</a></li>
@@ -412,6 +428,10 @@ window.logout = function() {
             window.llenarSelectClientes();
             // Iniciar escucha de usuarios
             window.escucharUsuarios();
+        } else {
+            // Asegurar que los botones de admin estén ocultos para clientes
+            document.getElementById('btn-add-producto').classList.add('d-none');
+            document.getElementById('btn-add-pedido').classList.add('d-none');
         }
 
         navHtml += `<li class="nav-item"><a class="nav-link text-danger" onclick="window.logout()">❌ Salir</a></li>`;
@@ -423,8 +443,9 @@ window.logout = function() {
         window.escucharProductos(); 
     };
 
-    // Actualizar también la función showSection para incluir usuarios
+    // ⭐️ CAMBIO: Ahora maneja también la visibilidad de section-home.
     window.showSection = function(section) {
+        document.getElementById('section-home').classList.add('d-none'); // Oculta Login/Banner
         document.getElementById('section-pedidos').classList.add('d-none');
         document.getElementById('section-tienda').classList.add('d-none');
         document.getElementById('section-usuarios').classList.add('d-none'); // Ocultar usuarios
@@ -433,16 +454,20 @@ window.logout = function() {
         document.getElementById('section-' + section).classList.remove('d-none');
     }
 
-    // --- L�GICA DE BASE DE DATOS (FIRESTORE) ---
+    // --- LGICA DE BASE DE DATOS (FIRESTORE) ---
 
-    // Funci�n para LEER pedidos en tiempo real
+    // Funcin para LEER pedidos en tiempo real
     window.escucharPedidos = function() {
+    // Si no está logueado, esta función no debe hacer nada, o initApp la llama
+    if (!currentUser) return; 
+        
     const q = query(collection(db, "pedidos"), orderBy("fechaCreacion", "desc"));
     
     onSnapshot(q, (snapshot) => {
         const container = document.getElementById('pedidos-container');
         container.innerHTML = ''; 
 
+        // Filtrado por usuario si no es admin
         const pedidosFiltrados = currentUser.role === 'admin'
             ? snapshot.docs
             : snapshot.docs.filter(doc => doc.data().nombreUsuario.toLowerCase() === currentUser.name.toLowerCase());
@@ -487,8 +512,8 @@ window.logout = function() {
     });
 }
 
-    // Funci�n para GUARDAR un nuevo pedido (Solo Admin)
-    window.guardarPedido = async function() { // �CORREGIDO!
+    // Funcin para GUARDAR un nuevo pedido (Solo Admin)
+    window.guardarPedido = async function() { // CORREGIDO!
         const nombre = document.getElementById('new-nombre').value;
         const pagado = document.getElementById('new-pagado').value;
         const deuda = document.getElementById('new-deuda').value;
@@ -496,15 +521,15 @@ window.logout = function() {
         const fecha2 = document.getElementById('new-fecha2').value;
         const estado = document.getElementById('new-estado').value;
 
-        if(!nombre || !pagado) return alert("Llena los datos m�nimos");
+        if(!nombre || !pagado) return alert("Llena los datos mnimos");
 
         try {
             await addDoc(collection(db, "pedidos"), {
                 nombreUsuario: nombre,
                 dolarPagado: parseFloat(pagado),
-                dolarDeuda: parseFloat(deuda || 0), // Asegurar que sea 0 si est� vac�o
-                llegadaInicio: fecha1 || 'Pendiente', // Manejar campos vac�os
-                llegadaFin: fecha2 || 'Pendiente', // Manejar campos vac�os
+                dolarDeuda: parseFloat(deuda || 0), // Asegurar que sea 0 si est vaco
+                llegadaInicio: fecha1 || 'Pendiente', // Manejar campos vacos
+                llegadaFin: fecha2 || 'Pendiente', // Manejar campos vacos
                 estado: estado,
                 fechaCreacion: Timestamp.now()
             });
@@ -561,7 +586,7 @@ window.enviarNotificacionLlegada = async function(nombreCliente, pedidoId) {
     }
 }
 
-    // Funci�n para LEER productos en tiempo real
+    // Funcin para LEER productos en tiempo real
     window.escucharProductos = function() {
     const q = query(collection(db, "productos"), orderBy("nombre", "asc"));
     
@@ -576,8 +601,12 @@ window.enviarNotificacionLlegada = async function(nombreCliente, pedidoId) {
             // Lógica de botones: Admin ve Editar, Usuario ve Comprar
             let actionBtn = `<button onclick="window.comprar('${p.nombre}')" class="btn btn-dark w-100 mt-2">Comprar</button>`;
             
-            if(currentUser.role === 'admin') {
+            // Solo muestra el botón de editar si hay un usuario logueado y es admin
+            if(currentUser && currentUser.role === 'admin') { 
                 actionBtn = `<button onclick="cargarDatosEdicionProducto('${id}')" class="btn btn-warning w-100 mt-2">✏️ Editar Producto</button>`;
+            } else if (!currentUser) {
+                // Si no está logueado, solo puede comprar
+                actionBtn = `<button onclick="window.comprar('${p.nombre}')" class="btn btn-dark w-100 mt-2">Comprar</button>`;
             }
 
             const html = `
@@ -600,8 +629,8 @@ window.enviarNotificacionLlegada = async function(nombreCliente, pedidoId) {
     });
 }
 
-    // Funci�n para GUARDAR un nuevo producto (Solo Admin)
-    window.guardarProducto = async function() { // �CORREGIDO!
+    // Funcin para GUARDAR un nuevo producto (Solo Admin)
+    window.guardarProducto = async function() { // CORREGIDO!
         const nombre = document.getElementById('prod-nombre').value;
         const detalle = document.getElementById('prod-detalle').value;
         const precio = document.getElementById('prod-precio').value;
@@ -933,11 +962,15 @@ window.enviarNotificacionLlegada = async function(nombreCliente, pedidoId) {
 // ...
 
     // TIENDA (Datos locales de ejemplo, pero conectados a WhatsApp)
+    // ⭐️ CAMBIO: Permite que usuarios no logueados puedan hacer el intento de comprar
     window.comprar = function(prod) {
-        const msg = `Hola, soy ${currentUser.name}. Quiero comprar: ${prod}`;
+        // Si currentUser existe, usa el nombre. Si no, usa un texto genérico.
+        const userName = currentUser ? currentUser.name : 'un cliente (no autenticado)';
+        const msg = `Hola, soy ${userName}. Quiero comprar: ${prod}`;
         window.open(`https://wa.me/${window.adminPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
-    // ⭐️ ¡NUEVO! Llamamos a esta función al cargar la página para restaurar la sesión.
+    
+    // ⭐️ Llamamos a esta función al cargar la página para restaurar la sesión o iniciar como invitado.
     window.checkSession();
     
 </script>
